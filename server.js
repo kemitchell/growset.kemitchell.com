@@ -315,9 +315,7 @@ function mail (message, callback) {
   }
   form.pipe(
     https.request(options)
-      .once('error', function (error) {
-        callback(error)
-      })
+      .once('error', callback)
       .once('response', function (response) {
         var status = response.statusCode
         if (status === 200) return callback()
