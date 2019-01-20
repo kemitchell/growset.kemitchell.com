@@ -1,3 +1,35 @@
 body > main {
+  font-size: 12pt;
+  line-height: 1.5625;
   padding: 1rem;
+}
+
+td, th {
+  padding: 0.5rem;
+  text-align: left;
+}
+
+tr > td:first-child,
+tr > th:first-child {
+  padding-left: 0;
+}
+
+tr > td:last-child,
+tr > th:last-child {
+  padding-right: 0;
+}
+
+.yes {
+  background: #28a745;
+  color: white;
+}
+
+.no {
+  background: #dc3545;
+  color: white;
+}
+
+.maybe {
+  background: #ffc107;
+  color: #343a40;
 }
