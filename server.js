@@ -100,7 +100,8 @@ function createID (callback) {
 }
 
 function styles (request, response) {
-  fs.createReadStream(path.join(__dirname, 'styles.css')).pipe(response)
+  fs.createReadStream(path.join(__dirname, 'styles.css'))
+    .pipe(response)
 }
 
 function vote (request, response, id) {
@@ -143,7 +144,7 @@ function postVote (request, response, id) {
         if (error) return internalError(request, response, error)
         renderMustache('voted.html', {}, function (error, html) {
           if (error) return internalError(request, response, error)
-          else response.end(html)
+          response.end(html)
         })
         readVoteData(id, function (error, data) {
           if (error) return console.error(error)
