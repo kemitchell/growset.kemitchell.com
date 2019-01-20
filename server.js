@@ -1,5 +1,6 @@
 var Busboy = require('busboy')
 var FormData = require('form-data')
+var assert = require('assert')
 var basicAuth = require('basic-auth')
 var crypto = require('crypto')
 var doNotCache = require('do-not-cache')
@@ -238,6 +239,12 @@ function dateString () {
 }
 
 function mail (message, callback) {
+  assert.strictEqual(typeof message.subject, 'string')
+  assert.strictEqual(Array.isArray(message.text))
+  assert.strictEqual(message.text.every(function (element) {
+    return typeof element === 'string'
+  }))
+  assert.strictEqual(typeof callback, 'function')
   if (
     !process.env.MAILGUN_FROM ||
     !process.env.EMAIL_TO ||
