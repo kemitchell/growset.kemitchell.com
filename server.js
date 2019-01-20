@@ -296,17 +296,16 @@ function renderMustache (templateFile, view, callback) {
     rendered: function (done) {
       fs.readFile(packagePath(templateFile), 'utf8', done)
     },
-    head: loadTemplate('head.html'),
-    footer: loadTemplate('footer.html')
+    head: loadPartial('head'),
+    footer: loadPartial('footer')
   }, function (error, templates) {
     if (error) return callback(Error)
-    var partials = { head: templates.head }
     var html = mustache.render(templates.rendered, view, templates)
     callback(null, html)
   })
-  function loadTemplate (fileName) {
+  function loadPartial (baseName) {
     return function (done) {
-      fs.readFile(packagePath(fileName), 'utf8', done)
+      fs.readFile(packagePath('_' + baseName + '.html'), 'utf8', done)
     }
   }
 }
