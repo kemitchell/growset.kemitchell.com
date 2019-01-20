@@ -10,6 +10,7 @@ var jsonfile = require('jsonfile')
 var mkdirp = require('mkdirp')
 var mustache = require('mustache')
 var path = require('path')
+var runParallel = require('run-parallel')
 var simpleConcat = require('simple-concat')
 
 var DIRECTORY = process.env.DIRECTORY || 'vote'
@@ -48,12 +49,9 @@ function index (request, response) {
 }
 
 function getIndex (request, response) {
-  fs.readFile(path.join(__dirname, 'index.html'), 'utf8', function (error, template) {
+  renderMustache('index.html', {}, function (error, html) {
     if (error) return internalError(request, response, error)
-    fs.readFile(path.join(__dirname, 'head.html'), 'utf8', function (error, head) {
-      if (error) return internalError(request, response, error)
-      response.end(mustache.render(template, {}, { head }))
-    })
+    else response.end(html)
   })
 }
 
@@ -119,20 +117,13 @@ function methodNotAllowed (request, response) {
 
 function getVote (request, response, id) {
   doNotCache(response)
-  fs.readFile(
-    path.join(__dirname, 'vote.html'),
-    'utf8',
-    function (error, template) {
-      if (error) return internalError(request, response, error)
-      readVoteData(id, function (error, data) {
-        if (error) return internalError(request, response, error)
-        fs.readFile(path.join(__dirname, 'head.html'), 'utf8', function (error, head) {
-          if (error) return internalError(request, response, error)
-          response.end(mustache.render(template, data, { head }))
-        })
-      })
-    }
-  )
+  readVoteData(id, function (error, data) {
+    if (error) return internalError(request, response, error)
+    renderMustache('vote.html', data, function (error, html) {
+      if (error) internalError(request, response, error)
+      else response.end(html)
+    })
+  })
 }
 
 function postVote (request, response, id) {
@@ -150,8 +141,10 @@ function postVote (request, response, id) {
       var responsesPath = joinResponsesPath(id)
       fs.appendFile(responsesPath, line + '\n', function (error) {
         if (error) return internalError(request, response, error)
-        fs.createReadStream(path.join(__dirname, 'voted.html'))
-          .pipe(response)
+        renderMustache('voted.html', {}, function (error, html) {
+          if (error) return internalError(request, response, error)
+          else response.end(html)
+        })
         readVoteData(id, function (error, data) {
           if (error) return console.error(error)
           var title = data.title
@@ -171,36 +164,42 @@ function postVote (request, response, id) {
 }
 
 function readVoteData (id, callback) {
-  var votePath = joinVotePath(id)
-  var responsesPath = joinResponsesPath(id)
-  jsonfile.readFile(votePath, function (error, vote) {
-    if (error) return callback(error)
-    fs.readFile(responsesPath, 'utf8', function (error, ndjson) {
-      if (error) {
-        if (error.code === 'ENOENT') ndjson = ''
-        else return callback(error)
-      }
-      callback(null, {
-        title: vote.title,
-        choices: vote.choices,
-        responses: ndjson
-          .split('\n')
-          .map(function (line) {
-            try {
-              var data = JSON.parse(line)
-            } catch (error) {
-              return null
-            }
-            return {
-              date: data[0],
-              responder: data[1],
-              choices: data[2]
-            }
-          })
-          .filter(function (x) {
-            return x !== null
-          })
+  runParallel({
+    vote: function (done) {
+      jsonfile.readFile(joinVotePath(id), done)
+    },
+    ndjson: function (done) {
+      var responsesPath = joinResponsesPath(id)
+      fs.readFile(responsesPath, 'utf8', function (error, ndjson) {
+        if (error) {
+          if (error.code === 'ENOENT') ndjson = ''
+          else return callback(error)
+        }
+        done(null, ndjson)
       })
+    }
+  }, function (error, results) {
+    if (error) callback(error)
+    callback(null, {
+      title: results.vote.title,
+      choices: results.vote.choices,
+      responses: results.ndjson
+        .split('\n')
+        .map(function (line) {
+          try {
+            var data = JSON.parse(line)
+          } catch (error) {
+            return null
+          }
+          return {
+            date: data[0],
+            responder: data[1],
+            choices: data[2]
+          }
+        })
+        .filter(function (x) {
+          return x !== null
+        })
     })
   })
 }
@@ -272,4 +271,20 @@ function mail (message, callback) {
         })
       })
   )
+}
+
+function renderMustache (templateFile, view, callback) {
+  runParallel({
+    rendered: function (done) {
+      fs.readFile(path.join(__dirname, templateFile), 'utf8', done)
+    },
+    head: function (done) {
+      fs.readFile(path.join(__dirname, 'head.html'), 'utf8', done)
+    }
+  }, function (error, templates) {
+    if (error) return callback(Error)
+    var partials = { head: templates.head }
+    var html = mustache.render(templates.rendered, view, partials)
+    callback(null, html)
+  })
 }

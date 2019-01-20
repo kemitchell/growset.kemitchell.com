@@ -11,6 +11,7 @@
     "jsonfile": "^5.0.0",
     "mkdirp": "^0.5.1",
     "mustache": "^3.0.1",
+    "run-parallel": "^1.1.9",
     "simple-concat": "^1.0.0"
   },
   "scripts": {
