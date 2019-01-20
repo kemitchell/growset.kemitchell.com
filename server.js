@@ -14,7 +14,7 @@ var path = require('path')
 var runParallel = require('run-parallel')
 var simpleConcat = require('simple-concat')
 
-var DIRECTORY = process.env.DIRECTORY || 'vote'
+var DIRECTORY = process.env.DIRECTORY || 'vote-data'
 var USER = process.env.PASSWORD || 'vote'
 var PASSWORD = process.env.PASSWORD || 'vote'
 
