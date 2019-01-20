@@ -34,7 +34,7 @@ var server = http.createServer(function (request, response) {
   var url = request.url
   if (url === '/') return index(request, response)
   if (url === '/styles.css') return styles(request, response)
-  if (url === '/script.js') return script(request, response)
+  if (url === '/client.js') return client(request, response)
   var match = /^\/([a-f0-9]{64})$/.exec(url)
   if (match) vote(request, response, match[1])
   else notFound(request, response)
@@ -110,8 +110,8 @@ function styles (request, response) {
     .pipe(response)
 }
 
-function script (request, response) {
-  fs.createReadStream(packagePath('script.js'))
+function client (request, response) {
+  fs.createReadStream(packagePath('client.js'))
     .pipe(response)
 }
 
