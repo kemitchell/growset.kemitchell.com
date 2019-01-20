@@ -64,6 +64,7 @@ function index (request, response) {
 function getIndex (request, response) {
   renderMustache('index.html', {}, function (error, html) {
     if (error) return internalError(request, response, error)
+    response.setHeader('Content-Type', 'text/html')
     response.end(html)
   })
 }
@@ -137,6 +138,7 @@ function getVote (request, response, id) {
     if (error) return internalError(request, response, error)
     renderMustache('vote.html', data, function (error, html) {
       if (error) return internalError(request, response, error)
+      response.setHeader('Content-Type', 'text/html')
       response.end(html)
     })
   })
