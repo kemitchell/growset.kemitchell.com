@@ -135,7 +135,10 @@ function vote (request, response, id) {
 function getVote (request, response, id) {
   doNotCache(response)
   readVoteData(id, function (error, data) {
-    if (error) return internalError(request, response, error)
+    if (error) {
+      if (error.code === 'ENOENT') return notFound(request, response)
+      else return internalError(request, response, error)
+    }
     renderMustache('vote.html', data, function (error, html) {
       if (error) return internalError(request, response, error)
       response.setHeader('Content-Type', 'text/html')
