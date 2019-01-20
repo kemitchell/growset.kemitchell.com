@@ -187,14 +187,31 @@ function readVoteData (id, callback) {
     vote: function (done) {
       jsonfile.readFile(joinVotePath(id), done)
     },
-    ndjson: function (done) {
+    responses: function (done) {
       var responsesPath = joinResponsesPath(id)
       fs.readFile(responsesPath, 'utf8', function (error, ndjson) {
         if (error) {
           if (error.code === 'ENOENT') ndjson = ''
           else return callback(error)
         }
-        done(null, ndjson)
+        done(null, ndjson
+          .split('\n')
+          .map(function (line) {
+            try {
+              var data = JSON.parse(line)
+            } catch (error) {
+              return null
+            }
+            return {
+              date: data[0],
+              responder: data[1],
+              choices: data[2]
+            }
+          })
+          .filter(function (x) {
+            return x !== null
+          })
+        )
       })
     }
   }, function (error, results) {
@@ -202,23 +219,7 @@ function readVoteData (id, callback) {
     callback(null, {
       title: results.vote.title,
       choices: results.vote.choices,
-      responses: results.ndjson
-        .split('\n')
-        .map(function (line) {
-          try {
-            var data = JSON.parse(line)
-          } catch (error) {
-            return null
-          }
-          return {
-            date: data[0],
-            responder: data[1],
-            choices: data[2]
-          }
-        })
-        .filter(function (x) {
-          return x !== null
-        })
+      responses: results.responses
     })
   })
 }
