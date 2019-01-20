@@ -22,7 +22,7 @@ var simpleConcat = require('simple-concat')
 var DIRECTORY = process.env.DIRECTORY || 'approval-data'
 var HOSTNAME = process.env.HOSTNAME || os.hostname()
 var PASSWORD = process.env.PASSWORD || 'approval'
-var USER = process.env.PASSWORD || 'approval'
+var USER = process.env.USER || 'approval'
 
 process
   .on('SIGTERM', shutdown)
