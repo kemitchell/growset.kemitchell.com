@@ -103,8 +103,8 @@ function postIndex (request, response) {
 
 function createID (callback) {
   crypto.randomBytes(16, function (error, buffer) {
-    if (error) callback(error)
-    else callback(null, buffer.toString('hex'))
+    if (error) return callback(error)
+    callback(null, buffer.toString('hex'))
   })
 }
 
@@ -135,8 +135,8 @@ function getVote (request, response, id) {
   readVoteData(id, function (error, data) {
     if (error) return internalError(request, response, error)
     renderMustache('vote.html', data, function (error, html) {
-      if (error) internalError(request, response, error)
-      else response.end(html)
+      if (error) return internalError(request, response, error)
+      response.end(html)
     })
   })
 }
