@@ -33,6 +33,7 @@ var server = http.createServer(function (request, response) {
   var url = request.url
   if (url === '/') return index(request, response)
   if (url === '/styles.css') return styles(request, response)
+  if (url === '/script.js') return script(request, response)
   var match = /^\/([a-f0-9]{64})$/.exec(url)
   if (match) vote(request, response, match[1])
   else notFound(request, response)
@@ -105,6 +106,11 @@ function createID (callback) {
 
 function styles (request, response) {
   fs.createReadStream(packagePath('styles.css'))
+    .pipe(response)
+}
+
+function script (request, response) {
+  fs.createReadStream(packagePath('script.js'))
     .pipe(response)
 }
 
