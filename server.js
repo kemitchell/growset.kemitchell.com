@@ -13,6 +13,7 @@ var mustache = require('mustache')
 var os = require('os')
 var path = require('path')
 var runParallel = require('run-parallel')
+var runSeries = require('run-series')
 var simpleConcat = require('simple-concat')
 
 var DIRECTORY = process.env.DIRECTORY || 'vote-data'
@@ -79,23 +80,19 @@ function postIndex (request, response) {
           var date = dateString()
           var data = { date, title, choices }
           var votePath = joinVotePath(id)
-          mkdirp(
-            dataPath(id),
-            function (error) {
-              if (error) return internalError(request, response, error)
-              fs.writeFile(
-                votePath,
-                JSON.stringify(data),
-                'utf8',
-                function (error) {
-                  if (error) return internalError(request, response, error)
-                  response.setHeader('Location', '/' + id)
-                  response.statusCode = 303
-                  response.end()
-                }
-              )
+          runSeries([
+            function (done) {
+              mkdirp(dataPath(id), done)
+            },
+            function (done) {
+              fs.writeFile(votePath, JSON.stringify(data), 'utf8', done)
             }
-          )
+          ], function (error) {
+            if (error) return internalError(request, response, error)
+            response.setHeader('Location', '/' + id)
+            response.statusCode = 303
+            response.end()
+          })
         })
       })
   )
