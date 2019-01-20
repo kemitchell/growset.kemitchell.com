@@ -18,6 +18,7 @@ var simpleConcat = require('simple-concat')
 var DIRECTORY = process.env.DIRECTORY || 'vote-data'
 var USER = process.env.PASSWORD || 'vote'
 var PASSWORD = process.env.PASSWORD || 'vote'
+var HOSTNAME = process.env.HOSTNAME || os.hostname()
 
 process
   .on('SIGTERM', shutdown)
@@ -157,7 +158,7 @@ function postVote (request, response, id) {
             text: [
               '"' + responder + '" responded to ' +
               '"' + title + '".',
-              (process.env.HOSTNAME || os.hostname()) + '/' + id
+              HOSTNAME + '/' + id
             ]
           }, function (error) {
             if (error) console.error(error)
