@@ -1,13 +1,16 @@
 var Busboy = require('busboy')
+var FormData = require('form-data')
 var basicAuth = require('basic-auth')
 var crypto = require('crypto')
 var doNotCache = require('do-not-cache')
 var fs = require('fs')
 var http = require('http')
+var https = require('https')
 var jsonfile = require('jsonfile')
 var mkdirp = require('mkdirp')
 var mustache = require('mustache')
 var path = require('path')
+var simpleConcat = require('simple-concat')
 
 var DIRECTORY = process.env.DIRECTORY || 'vote'
 var USER = process.env.PASSWORD || 'vote'
@@ -149,6 +152,20 @@ function postVote (request, response, id) {
         if (error) return internalError(request, response, error)
         fs.createReadStream(path.join(__dirname, 'voted.html'))
           .pipe(response)
+        readVoteData(id, function (error, data) {
+          if (error) return console.error(error)
+          var title = data.title
+          mail({
+            subject: 'Response to "' + title + '"',
+            text: [
+              '"' + responder + '" responded to ' +
+              '"' + title + '".',
+              process.env.HOSTNAME + '/' + id
+            ]
+          }, function (error) {
+            if (error) console.error(error)
+          })
+        })
       })
     }))
 }
@@ -217,4 +234,34 @@ server.listen(process.env.PORT || 8080)
 
 function dateString () {
   return new Date().toISOString()
+}
+
+function mail (message, callback) {
+  var form = new FormData()
+  form.append('from', process.env.MAILGUN_FROM)
+  form.append('to', process.env.EMAIL_TO)
+  form.append('subject', message.subject)
+  form.append('o:dkim', 'yes')
+  form.append('text', message.text.join('\n\n'))
+  var options = {
+    method: 'POST',
+    host: 'api.mailgun.net',
+    path: '/v3/' + process.env.MAILGUN_DOMAIN + '/messages',
+    auth: 'api:' + process.env.MAILGUN_KEY,
+    headers: form.getHeaders()
+  }
+  form.pipe(
+    https.request(options)
+      .once('error', function (error) {
+        callback(error)
+      })
+      .once('response', function (response) {
+        var status = response.statusCode
+        if (status === 200) return callback()
+        simpleConcat(response, function (error, body) {
+          if (error) return callback(error)
+          callback(body.toString())
+        })
+      })
+  )
 }
