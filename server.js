@@ -33,12 +33,16 @@ process
     shutdown()
   })
 
+var ID_BYTES = 16
+
+var ID_RE = new RegExp('^/([a-f0-9]{' + (ID_BYTES * 2) + '})$')
+
 var server = http.createServer(function (request, response) {
   var url = request.url
   if (url === '/') return index(request, response)
   if (url === '/styles.css') return styles(request, response)
   if (url === '/client.js') return client(request, response)
-  var match = /^\/([a-f0-9]{32})$/.exec(url)
+  var match = ID_RE.exec(url)
   if (match) vote(request, response, match[0])
   else notFound(request, response)
 })
@@ -102,7 +106,7 @@ function postIndex (request, response) {
 }
 
 function createID (callback) {
-  crypto.randomBytes(16, function (error, buffer) {
+  crypto.randomBytes(ID_BYTES, function (error, buffer) {
     if (error) return callback(error)
     callback(null, buffer.toString('hex'))
   })
