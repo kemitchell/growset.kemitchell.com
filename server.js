@@ -55,7 +55,7 @@ function index (request, response) {
 function getIndex (request, response) {
   renderMustache('index.html', {}, function (error, html) {
     if (error) return internalError(request, response, error)
-    else response.end(html)
+    response.end(html)
   })
 }
 
