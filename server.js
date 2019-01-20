@@ -40,8 +40,8 @@ var ID_RE = new RegExp('^/([a-f0-9]{' + (ID_BYTES * 2) + '})$')
 var server = http.createServer(function (request, response) {
   var url = request.url
   if (url === '/') return index(request, response)
-  if (url === '/styles.css') return styles(request, response)
-  if (url === '/client.js') return client(request, response)
+  if (url === '/styles.css') return serveFile(request, response)
+  if (url === '/client.js') return serveFile(request, response)
   var match = ID_RE.exec(url)
   if (match) vote(request, response, match[0])
   else notFound(request, response)
@@ -112,14 +112,10 @@ function createID (callback) {
   })
 }
 
-function styles (request, response) {
-  fs.createReadStream(packagePath('styles.css'))
-    .pipe(response)
-}
-
-function client (request, response) {
-  fs.createReadStream(packagePath('client.js'))
-    .pipe(response)
+function serveFile (request, response) {
+  var basename = path.basename(request.url)
+  var filePath = packagePath(basename)
+  fs.createReadStream(filePath).pipe(response)
 }
 
 function vote (request, response, id) {
