@@ -299,9 +299,7 @@ function mail (message, callback) {
     !process.env.EMAIL_TO ||
     !process.env.MAILGUN_DOMAIN ||
     !process.env.MAILGUN_KEY
-  ) {
-    return callback()
-  }
+  ) return callback()
   var form = new FormData()
   form.append('from', process.env.MAILGUN_FROM)
   form.append('to', process.env.EMAIL_TO)
