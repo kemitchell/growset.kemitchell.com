@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang=en>
+  <head>
+    <meta charset=utf-8>
+    <title>Vote</title>
+  </head>
+  <body>
+    <main>
+      <h1>{{title}}</h1>
+
+      <form method=post>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              {{#choices}}<th>{{.}}</th>{{/choices}}
+            </tr>
+          </thead>
+
+          <tbody>
+            {{#responses}}
+              <tr>
+                <td data-date="{{date}}">{{responder}}</td>
+                {{#choices}}<td>{{.}}</td>{{/choices}}
+              </tr>
+            {{/responses}}
+
+            <tr>
+              <td><input name=responder type=text></td>
+              {{#choices}}
+                <td>
+                  <select name=choices[]>
+                    <option value=yes>yes</option>
+                    <option value=maybe>not preferred</option>
+                    <option value=no>no</option>
+                  </select>
+                </td>
+              {{/choices}}
+            </tr>
+          </tbody>
+        </table>
+
+        <button type=submit>Submit</button>
+      </form>
+    </main>
+  </body>
+</html>
