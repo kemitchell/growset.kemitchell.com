@@ -237,6 +237,14 @@ function dateString () {
 }
 
 function mail (message, callback) {
+  if (
+    !process.env.MAILGUN_FROM ||
+    !process.env.EMAIL_TO ||
+    !process.env.MAILGUN_DOMAIN ||
+    !process.env.MAILGUN_KEY
+  ) {
+    return callback()
+  }
   var form = new FormData()
   form.append('from', process.env.MAILGUN_FROM)
   form.append('to', process.env.EMAIL_TO)
