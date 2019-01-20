@@ -333,9 +333,7 @@ function mail (message, callback) {
 
 function renderMustache (templateFile, view, callback) {
   runParallel({
-    rendered: function (done) {
-      fs.readFile(packagePath(templateFile), 'utf8', done)
-    },
+    rendered: loadFile(templateFile),
     head: loadPartial('head'),
     footer: loadPartial('footer')
   }, function (error, templates) {
@@ -343,9 +341,14 @@ function renderMustache (templateFile, view, callback) {
     var html = mustache.render(templates.rendered, view, templates)
     callback(null, html)
   })
+
   function loadPartial (baseName) {
+    return loadFile('_' + baseName + '.html')
+  }
+
+  function loadFile (name) {
     return function (done) {
-      fs.readFile(packagePath('_' + baseName + '.html'), 'utf8', done)
+      fs.readFile(packagePath(name), 'utf8', done)
     }
   }
 }
