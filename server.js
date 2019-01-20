@@ -20,9 +20,9 @@ var schedule = require('node-schedule')
 var simpleConcat = require('simple-concat')
 
 var DIRECTORY = process.env.DIRECTORY || 'approval-data'
-var USER = process.env.PASSWORD || 'approval'
-var PASSWORD = process.env.PASSWORD || 'approval'
 var HOSTNAME = process.env.HOSTNAME || os.hostname()
+var PASSWORD = process.env.PASSWORD || 'approval'
+var USER = process.env.PASSWORD || 'approval'
 
 process
   .on('SIGTERM', shutdown)
