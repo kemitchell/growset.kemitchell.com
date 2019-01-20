@@ -37,6 +37,6 @@ tr > th:last-child {
   color: #343a40;
 }
 
-input {
+input, select, button {
   padding: 0.5rem;
 }
