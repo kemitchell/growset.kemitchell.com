@@ -35,7 +35,7 @@ var server = http.createServer(function (request, response) {
   if (url === '/') return index(request, response)
   if (url === '/styles.css') return styles(request, response)
   if (url === '/client.js') return client(request, response)
-  var match = /^\/([a-f0-9]{64})$/.exec(url)
+  var match = /^\/([a-f0-9]{32})$/.exec(url)
   if (match) vote(request, response, match[1])
   else notFound(request, response)
 })
@@ -99,7 +99,7 @@ function postIndex (request, response) {
 }
 
 function createID (callback) {
-  crypto.randomBytes(32, function (error, buffer) {
+  crypto.randomBytes(16, function (error, buffer) {
     if (error) callback(error)
     else callback(null, buffer.toString('hex'))
   })
