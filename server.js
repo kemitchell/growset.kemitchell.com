@@ -71,7 +71,7 @@ function postIndex (request, response) {
           var data = { date, title, choices }
           var votePath = joinVotePath(id)
           mkdirp(
-            path.join(DIRECTORY, id),
+            dataPath(id),
             function (error) {
               if (error) return internalError(request, response, error)
               fs.writeFile(
@@ -100,7 +100,7 @@ function createID (callback) {
 }
 
 function styles (request, response) {
-  fs.createReadStream(path.join(__dirname, 'styles.css'))
+  fs.createReadStream(packagePath('styles.css'))
     .pipe(response)
 }
 
@@ -206,11 +206,11 @@ function readVoteData (id, callback) {
 }
 
 function joinResponsesPath (id) {
-  return path.join(DIRECTORY, id, 'responses.ndjson')
+  return path.join(dataPath(id), 'responses.ndjson')
 }
 
 function joinVotePath (id) {
-  return path.join(DIRECTORY, id, 'vote.json')
+  return path.join(dataPath(id), 'vote.json')
 }
 
 function notFound (request, response) {
@@ -277,10 +277,10 @@ function mail (message, callback) {
 function renderMustache (templateFile, view, callback) {
   runParallel({
     rendered: function (done) {
-      fs.readFile(path.join(__dirname, templateFile), 'utf8', done)
+      fs.readFile(packagePath(templateFile), 'utf8', done)
     },
     head: function (done) {
-      fs.readFile(path.join(__dirname, 'head.html'), 'utf8', done)
+      fs.readFile(packagePath('head.html'), 'utf8', done)
     }
   }, function (error, templates) {
     if (error) return callback(Error)
@@ -288,4 +288,12 @@ function renderMustache (templateFile, view, callback) {
     var html = mustache.render(templates.rendered, view, partials)
     callback(null, html)
   })
+}
+
+function dataPath (fileName) {
+  return path.join(DIRECTORY, fileName)
+}
+
+function packagePath (fileName) {
+  return path.join(__dirname, fileName)
 }
