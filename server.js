@@ -22,6 +22,7 @@ var DIRECTORY = process.env.DIRECTORY || 'vote'
 var server = http.createServer(function (request, response) {
   var url = request.url
   if (url === '/') return index(request, response)
+  if (url === '/styles.css') return styles(request, response)
   var match = /^\/([a-f0-9]{64})$/.exec(url)
   if (match) vote(request, response, match[1])
   else notFound(request, response)
@@ -35,9 +36,13 @@ function index (request, response) {
 }
 
 function getIndex (request, response) {
-  return fs
-    .createReadStream(path.join(__dirname, 'index.html'))
-    .pipe(response)
+  fs.readFile(path.join(__dirname, 'index.html'), 'utf8', function (error, template) {
+    if (error) return internalError(request, response, error)
+    fs.readFile(path.join(__dirname, 'head.html'), 'utf8', function (error, head) {
+      if (error) return internalError(request, response, error)
+      response.end(mustache.render(template, {}, {head}))
+    })
+  })
 }
 
 function postIndex (request, response) {
@@ -84,6 +89,10 @@ function createID (callback) {
   })
 }
 
+function styles (request, response) {
+  fs.createReadStream(path.join(__dirname, 'styles.css')).pipe(response)
+}
+
 function vote (request, response, id) {
   var method = request.method
   if (method === 'GET') getVote(request, response, id)
@@ -105,7 +114,10 @@ function getVote (request, response, id) {
       if (error) return internalError(request, response, error)
       readVoteData(id, function (error, data) {
         if (error) return internalError(request, response, error)
-        response.end(mustache.render(template, data))
+        fs.readFile(path.join(__dirname, 'head.html'), 'utf8', function (error, head) {
+          if (error) return internalError(request, response, error)
+          response.end(mustache.render(template, data, {head}))
+        })
       })
     }
   )
@@ -140,7 +152,7 @@ function readVoteData (id, callback) {
     fs.readFile(responsesPath, 'utf8', function (error, ndjson) {
       if (error) {
         if (error.code === 'ENOENT') ndjson = ''
-        else callback(error)
+        else return callback(error)
       }
       callback(null, {
         title: vote.title,
