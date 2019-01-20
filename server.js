@@ -43,7 +43,7 @@ var server = http.createServer(function (request, response) {
   if (url === '/styles.css') return serveFile(request, response)
   if (url === '/client.js') return serveFile(request, response)
   var match = ID_RE.exec(url)
-  if (match) vote(request, response, match[0])
+  if (match) vote(request, response, match[1])
   else notFound(request, response)
 })
 
