@@ -1,8 +1,7 @@
 {
   "private": true,
   "devDependencies": {
-    "standard": "^12.0.1",
-    "standard-markdown": "^5.0.1"
+    "standard": "^12.0.1"
   },
   "dependencies": {
     "basic-auth": "^2.0.1",
@@ -13,6 +12,6 @@
     "mustache": "^3.0.1"
   },
   "scripts": {
-    "lint": "standard && standard-markdown README.md"
+    "lint": "standard"
   }
 }

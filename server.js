@@ -49,7 +49,7 @@ function getIndex (request, response) {
     if (error) return internalError(request, response, error)
     fs.readFile(path.join(__dirname, 'head.html'), 'utf8', function (error, head) {
       if (error) return internalError(request, response, error)
-      response.end(mustache.render(template, {}, {head}))
+      response.end(mustache.render(template, {}, { head }))
     })
   })
 }
@@ -58,7 +58,7 @@ function postIndex (request, response) {
   var title
   var choices = []
   request.pipe(
-    new Busboy({headers: request.headers})
+    new Busboy({ headers: request.headers })
       .on('field', function (name, value) {
         if (name === 'title' && value) title = value
         if (name === 'choices[]' && value) choices.push(value)
@@ -67,7 +67,7 @@ function postIndex (request, response) {
         createID(function (error, id) {
           if (error) return internalError(request, response, error)
           var date = dateString()
-          var data = {date, title, choices}
+          var data = { date, title, choices }
           var votePath = joinVotePath(id)
           mkdirp(
             path.join(DIRECTORY, id),
@@ -125,7 +125,7 @@ function getVote (request, response, id) {
         if (error) return internalError(request, response, error)
         fs.readFile(path.join(__dirname, 'head.html'), 'utf8', function (error, head) {
           if (error) return internalError(request, response, error)
-          response.end(mustache.render(template, data, {head}))
+          response.end(mustache.render(template, data, { head }))
         })
       })
     }
@@ -136,7 +136,7 @@ function postVote (request, response, id) {
   doNotCache(response)
   var responder
   var choices = []
-  request.pipe(new Busboy({headers: request.headers})
+  request.pipe(new Busboy({ headers: request.headers })
     .on('field', function (name, value) {
       if (name === 'responder' && value) responder = value
       if (name === 'choices[]' && value) choices.push(value)
