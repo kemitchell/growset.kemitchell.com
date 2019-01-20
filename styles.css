@@ -1,6 +1,7 @@
 body > header,
 body > main,
 body > footer {
+  font-family: "Noto Sans", sans-serif;
   font-size: 12pt;
   line-height: 1.5625;
   padding: 1rem;
