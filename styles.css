@@ -36,3 +36,7 @@ tr > th:last-child {
   background: #ffc107;
   color: #343a40;
 }
+
+input {
+  padding: 0.5rem;
+}
