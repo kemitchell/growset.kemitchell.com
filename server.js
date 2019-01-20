@@ -10,6 +10,7 @@ var https = require('https')
 var jsonfile = require('jsonfile')
 var mkdirp = require('mkdirp')
 var mustache = require('mustache')
+var os = require('os')
 var path = require('path')
 var runParallel = require('run-parallel')
 var simpleConcat = require('simple-concat')
@@ -156,7 +157,7 @@ function postVote (request, response, id) {
             text: [
               '"' + responder + '" responded to ' +
               '"' + title + '".',
-              process.env.HOSTNAME + '/' + id
+              (process.env.HOSTNAME || os.hostname()) + '/' + id
             ]
           }, function (error) {
             if (error) console.error(error)
