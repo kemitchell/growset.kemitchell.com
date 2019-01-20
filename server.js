@@ -74,8 +74,9 @@ function postIndex (request, response) {
   request.pipe(
     new Busboy({ headers: request.headers })
       .on('field', function (name, value) {
-        if (name === 'title' && value) title = value
-        if (name === 'choices[]' && value) choices.push(value)
+        if (!value) return
+        if (name === 'title') title = value
+        if (name === 'choices[]') choices.push(value)
       })
       .once('finish', function () {
         createID(function (error, id) {
@@ -147,8 +148,9 @@ function postVote (request, response, id) {
   var choices = []
   request.pipe(new Busboy({ headers: request.headers })
     .on('field', function (name, value) {
-      if (name === 'responder' && value) responder = value
-      if (name === 'choices[]' && value) choices.push(value)
+      if (!value) return
+      if (name === 'responder') responder = value
+      if (name === 'choices[]') choices.push(value)
     })
     .once('finish', function () {
       var date = dateString()
