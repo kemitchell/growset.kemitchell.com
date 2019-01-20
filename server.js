@@ -36,6 +36,7 @@ var server = http.createServer(function (request, response) {
 })
 
 function index (request, response) {
+  doNotCache(response)
   var method = request.method
   var auth = basicAuth(request)
   if (!auth || auth.name !== USER || auth.pass !== PASSWORD) {
