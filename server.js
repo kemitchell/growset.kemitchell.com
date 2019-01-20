@@ -19,9 +19,9 @@ var runSeries = require('run-series')
 var schedule = require('node-schedule')
 var simpleConcat = require('simple-concat')
 
-var DIRECTORY = process.env.DIRECTORY || 'vote-data'
-var USER = process.env.PASSWORD || 'vote'
-var PASSWORD = process.env.PASSWORD || 'vote'
+var DIRECTORY = process.env.DIRECTORY || 'approval-data'
+var USER = process.env.PASSWORD || 'approval'
+var PASSWORD = process.env.PASSWORD || 'approval'
 var HOSTNAME = process.env.HOSTNAME || os.hostname()
 
 process
@@ -39,7 +39,7 @@ var server = http.createServer(function (request, response) {
   if (url === '/styles.css') return styles(request, response)
   if (url === '/client.js') return client(request, response)
   var match = /^\/([a-f0-9]{32})$/.exec(url)
-  if (match) vote(request, response, match[1])
+  if (match) vote(request, response, match[0])
   else notFound(request, response)
 })
 
