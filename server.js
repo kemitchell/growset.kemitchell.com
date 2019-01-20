@@ -12,8 +12,11 @@ var mkdirp = require('mkdirp')
 var mustache = require('mustache')
 var os = require('os')
 var path = require('path')
+var rimraf = require('rimraf')
 var runParallel = require('run-parallel')
+var runParallelLimit = require('run-parallel-limit')
 var runSeries = require('run-series')
+var schedule = require('node-schedule')
 var simpleConcat = require('simple-concat')
 
 var DIRECTORY = process.env.DIRECTORY || 'vote-data'
@@ -242,6 +245,38 @@ function shutdown () {
 }
 
 server.listen(process.env.PORT || 8080)
+
+var CONCURRENCY_LIMIT = 3
+
+schedule.scheduleJob('0 * * * *', deleteOldVotes)
+
+deleteOldVotes()
+
+function deleteOldVotes () {
+  fs.readdir(DIRECTORY, function (error, entries) {
+    if (error) return console.error(error)
+    runParallelLimit(entries.map(function (id) {
+      return function (done) {
+        var directory = path.join(DIRECTORY, id)
+        var votePath = joinVotePath(id)
+        jsonfile.readFile(votePath, function (error, vote) {
+          if (error) return console.error(error)
+          if (!old(vote.date)) return
+          rimraf(directory, function (error) {
+            console.log('Deleted ' + id)
+            if (error) console.error(error)
+          })
+        })
+      }
+    }), CONCURRENCY_LIMIT)
+  })
+}
+
+var THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000
+
+function old (created) {
+  return (new Date() - new Date(created)) > THIRTY_DAYS
+}
 
 function dateString () {
   return new Date().toISOString()
