@@ -334,7 +334,7 @@ function renderMustache (templateFile, view, callback) {
     head: loadPartial('head'),
     footer: loadPartial('footer')
   }, function (error, templates) {
-    if (error) return callback(Error)
+    if (error) return callback(error)
     var html = mustache.render(templates.rendered, view, templates)
     callback(null, html)
   })
