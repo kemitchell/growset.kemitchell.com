@@ -72,6 +72,10 @@ function postIndex (request, response) {
       .once('finish', function () {
         createID(function (error, id) {
           if (error) return internalError(request, response, error)
+          if (!title || choices.length === 0) {
+            response.statusCode = 400
+            return response.end()
+          }
           var date = dateString()
           var data = { date, title, choices }
           var votePath = joinVotePath(id)
