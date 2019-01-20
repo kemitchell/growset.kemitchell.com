@@ -1,12 +1,3 @@
-process
-  .on('SIGTERM', shutdown)
-  .on('SIGQUIT', shutdown)
-  .on('SIGINT', shutdown)
-  .on('uncaughtException', function (error) {
-    console.error(error)
-    shutdown()
-  })
-
 var Busboy = require('busboy')
 var basicAuth = require('basic-auth')
 var crypto = require('crypto')
@@ -21,6 +12,15 @@ var path = require('path')
 var DIRECTORY = process.env.DIRECTORY || 'vote'
 var USER = process.env.PASSWORD || 'vote'
 var PASSWORD = process.env.PASSWORD || 'vote'
+
+process
+  .on('SIGTERM', shutdown)
+  .on('SIGQUIT', shutdown)
+  .on('SIGINT', shutdown)
+  .on('uncaughtException', function (error) {
+    console.error(error)
+    shutdown()
+  })
 
 var server = http.createServer(function (request, response) {
   var url = request.url
