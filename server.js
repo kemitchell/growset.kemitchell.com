@@ -215,7 +215,7 @@ function readVoteData (id, callback) {
       })
     }
   }, function (error, results) {
-    if (error) callback(error)
+    if (error) return callback(error)
     callback(null, {
       title: results.vote.title,
       choices: results.vote.choices,
