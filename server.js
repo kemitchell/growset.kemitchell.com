@@ -239,12 +239,12 @@ function dateString () {
 }
 
 function mail (message, callback) {
-  assert.strictEqual(typeof message.subject, 'string')
-  assert.strictEqual(Array.isArray(message.text))
-  assert.strictEqual(message.text.every(function (element) {
+  assert(typeof message.subject === 'string')
+  assert(Array.isArray(message.text))
+  assert(message.text.every(function (element) {
     return typeof element === 'string'
   }))
-  assert.strictEqual(typeof callback, 'function')
+  assert(typeof callback === 'function')
   if (
     !process.env.MAILGUN_FROM ||
     !process.env.EMAIL_TO ||
