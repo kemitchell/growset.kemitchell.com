@@ -120,16 +120,16 @@ function serveFile (request, response) {
   fs.createReadStream(filePath).pipe(response)
 }
 
+function methodNotAllowed (request, response) {
+  response.statusCode = 405
+  response.end()
+}
+
 function vote (request, response, id) {
   var method = request.method
   if (method === 'GET') getVote(request, response, id)
   else if (method === 'POST') postVote(request, response, id)
   else methodNotAllowed(request, response)
-}
-
-function methodNotAllowed (request, response) {
-  response.statusCode = 405
-  response.end()
 }
 
 function getVote (request, response, id) {
