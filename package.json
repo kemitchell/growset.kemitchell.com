@@ -2,6 +2,7 @@
   "private": true,
   "devDependencies": {},
   "dependencies": {
+    "basic-auth": "^2.0.1",
     "busboy": "^0.3.0",
     "do-not-cache": "^1.0.1",
     "jsonfile": "^5.0.0",

@@ -8,6 +8,7 @@ process
   })
 
 var Busboy = require('busboy')
+var basicAuth = require('basic-auth')
 var crypto = require('crypto')
 var doNotCache = require('do-not-cache')
 var fs = require('fs')
@@ -18,6 +19,8 @@ var mustache = require('mustache')
 var path = require('path')
 
 var DIRECTORY = process.env.DIRECTORY || 'vote'
+var USER = process.env.PASSWORD || 'vote'
+var PASSWORD = process.env.PASSWORD || 'vote'
 
 var server = http.createServer(function (request, response) {
   var url = request.url
@@ -30,6 +33,12 @@ var server = http.createServer(function (request, response) {
 
 function index (request, response) {
   var method = request.method
+  var auth = basicAuth(request)
+  if (!auth || auth.name !== USER || auth.pass !== PASSWORD) {
+    response.statusCode = 401
+    response.setHeader('WWW-Authenticate', 'Basic realm="Vote"')
+    return response.end()
+  }
   if (method === 'GET') getIndex(request, response)
   else if (method === 'POST') postIndex(request, response)
   else methodNotAllowed(request, response)
@@ -51,8 +60,8 @@ function postIndex (request, response) {
   request.pipe(
     new Busboy({headers: request.headers})
       .on('field', function (name, value) {
-        if (name === 'title') title = value
-        if (name === 'choices[]') choices.push(value)
+        if (name === 'title' && value) title = value
+        if (name === 'choices[]' && value) choices.push(value)
       })
       .once('finish', function () {
         createID(function (error, id) {
@@ -129,8 +138,8 @@ function postVote (request, response, id) {
   var choices = []
   request.pipe(new Busboy({headers: request.headers})
     .on('field', function (name, value) {
-      if (name === 'responder') responder = value
-      if (name === 'choices[]') choices.push(value)
+      if (name === 'responder' && value) responder = value
+      if (name === 'choices[]' && value) choices.push(value)
     })
     .once('finish', function () {
       var date = dateString()
