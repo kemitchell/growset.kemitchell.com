@@ -213,9 +213,7 @@ function shutdown () {
   })
 }
 
-server.listen(process.env.PORT || 8080, function () {
-  console.log('Listening on port ' + this.address().port)
-})
+server.listen(process.env.PORT || 8080)
 
 function dateString () {
   return new Date().toISOString()
