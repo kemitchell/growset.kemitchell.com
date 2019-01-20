@@ -29,7 +29,7 @@ tr > th:last-child {
   color: white;
 }
 
-.maybe {
+.disfavored {
   background: #ffc107;
   color: #343a40;
 }
