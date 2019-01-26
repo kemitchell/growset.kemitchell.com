@@ -8,6 +8,7 @@ var fs = require('fs')
 var http = require('http')
 var https = require('https')
 var jsonfile = require('jsonfile')
+var linkifyURLs = require('linkify-urls')
 var mkdirp = require('mkdirp')
 var mustache = require('mustache')
 var os = require('os')
@@ -139,6 +140,9 @@ function getVote (request, response, id) {
       if (error.code === 'ENOENT') return notFound(request, response)
       else return internalError(request, response, error)
     }
+    data.linkedChoices = data.choices.map(function (choice) {
+      return linkifyURLs(choice, { attributes: { target: '_blank' } })
+    })
     renderMustache('vote.html', data, function (error, html) {
       if (error) return internalError(request, response, error)
       response.setHeader('Content-Type', 'text/html')
