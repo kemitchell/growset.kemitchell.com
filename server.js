@@ -1,29 +1,22 @@
 var Busboy = require('busboy')
-var FormData = require('form-data')
-var assert = require('assert')
 var basicAuth = require('basic-auth')
-var commonmark = require('commonmark')
 var crypto = require('crypto')
 var doNotCache = require('do-not-cache')
 var fs = require('fs')
 var http = require('http')
-var https = require('https')
 var jsonfile = require('jsonfile')
 var mkdirp = require('mkdirp')
 var mustache = require('mustache')
-var os = require('os')
 var path = require('path')
 var rimraf = require('rimraf')
 var runParallel = require('run-parallel')
 var runParallelLimit = require('run-parallel-limit')
 var runSeries = require('run-series')
 var schedule = require('node-schedule')
-var simpleConcat = require('simple-concat')
 
-var DIRECTORY = process.env.DIRECTORY || 'approval-data'
-var HOSTNAME = process.env.HOSTNAME || os.hostname()
-var PASSWORD = process.env.PASSWORD || 'approval'
-var USER = process.env.USER || 'approval'
+var DIRECTORY = process.env.DIRECTORY || 'growset'
+var PASSWORD = process.env.PASSWORD || 'growset'
+var USER = process.env.USER || 'growset'
 
 process
   .on('SIGTERM', shutdown)
@@ -42,9 +35,8 @@ var server = http.createServer(function (request, response) {
   var url = request.url
   if (url === '/') return index(request, response)
   if (url === '/styles.css') return serveFile(request, response)
-  if (url === '/client.js') return serveFile(request, response)
   var match = ID_RE.exec(url)
-  if (match) vote(request, response, match[1])
+  if (match) add(request, response, match[1])
   else notFound(request, response)
 })
 
@@ -54,7 +46,7 @@ function index (request, response) {
   var auth = basicAuth(request)
   if (!auth || auth.name !== USER || auth.pass !== PASSWORD) {
     response.statusCode = 401
-    response.setHeader('WWW-Authenticate', 'Basic realm="Vote"')
+    response.setHeader('WWW-Authenticate', 'Basic realm="Grow Set"')
     return response.end()
   }
   if (method === 'GET') getIndex(request, response)
@@ -72,30 +64,28 @@ function getIndex (request, response) {
 
 function postIndex (request, response) {
   var title
-  var choices = []
   request.pipe(
     new Busboy({ headers: request.headers })
       .on('field', function (name, value) {
         if (!value) return
         if (name === 'title') title = value
-        if (name === 'choices[]') choices.push(value)
       })
       .once('finish', function () {
         createID(function (error, id) {
           if (error) return internalError(request, response, error)
-          if (!title || choices.length === 0) {
+          if (!title) {
             response.statusCode = 400
             return response.end()
           }
           var date = dateString()
-          var data = { date, title, choices }
-          var votePath = joinVotePath(id)
+          var data = { date, title }
+          var setPath = joinSetPath(id)
           runSeries([
             function (done) {
               mkdirp(dataPath(id), done)
             },
             function (done) {
-              fs.writeFile(votePath, JSON.stringify(data), 'utf8', done)
+              fs.writeFile(setPath, JSON.stringify(data), 'utf8', done)
             }
           ], function (error) {
             if (error) return internalError(request, response, error)
@@ -126,27 +116,21 @@ function methodNotAllowed (request, response) {
   response.end()
 }
 
-function vote (request, response, id) {
+function add (request, response, id) {
   var method = request.method
-  if (method === 'GET') getVote(request, response, id)
-  else if (method === 'POST') postVote(request, response, id)
+  if (method === 'GET') getSet(request, response, id)
+  else if (method === 'POST') postSet(request, response, id)
   else methodNotAllowed(request, response)
 }
 
-function getVote (request, response, id) {
+function getSet (request, response, id) {
   doNotCache(response)
-  readVoteData(id, function (error, data) {
+  readSetData(id, function (error, data) {
     if (error) {
       if (error.code === 'ENOENT') return notFound(request, response)
       else return internalError(request, response, error)
     }
-    data.markdownChoices = data.choices.map(function (choice) {
-      var reader = new commonmark.Parser()
-      var writer = new commonmark.HtmlRenderer()
-      var parsed = reader.parse(choice)
-      return writer.render(parsed)
-    })
-    renderMustache('vote.html', data, function (error, html) {
+    renderMustache('add.html', data, function (error, html) {
       if (error) return internalError(request, response, error)
       response.setHeader('Content-Type', 'text/html')
       response.end(html)
@@ -154,52 +138,35 @@ function getVote (request, response, id) {
   })
 }
 
-function postVote (request, response, id) {
+function postSet (request, response, id) {
   doNotCache(response)
-  var responder
-  var choices = []
+  var element
   request.pipe(new Busboy({ headers: request.headers })
     .on('field', function (name, value) {
       if (!value) return
-      if (name === 'responder') responder = value
-      if (name === 'choices[]') choices.push(value)
+      if (name === 'element') element = value
     })
     .once('finish', function () {
       var date = dateString()
-      var line = JSON.stringify([date, responder, choices])
-      var responsesPath = joinResponsesPath(id)
+      var line = JSON.stringify([date, element])
+      var responsesPath = joinElementsPath(id)
       fs.appendFile(responsesPath, line + '\n', function (error) {
         if (error) return internalError(request, response, error)
-        renderMustache('voted.html', {}, function (error, html) {
-          if (error) return internalError(request, response, error)
-          response.end(html)
-        })
-        readVoteData(id, function (error, data) {
-          if (error) return console.error(error)
-          var title = data.title
-          mail({
-            subject: 'Response to "' + title + '"',
-            text: [
-              '"' + responder + '" responded to ' +
-              '"' + title + '".',
-              HOSTNAME + '/' + id
-            ]
-          }, function (error) {
-            if (error) console.error(error)
-          })
-        })
+        response.statusCode = 303
+        response.setHeader('Location', '/' + id)
+        response.end()
       })
     }))
 }
 
-function readVoteData (id, callback) {
+function readSetData (id, callback) {
   runParallel({
-    vote: function (done) {
-      jsonfile.readFile(joinVotePath(id), done)
+    set: function (done) {
+      jsonfile.readFile(joinSetPath(id), done)
     },
-    responses: function (done) {
-      var responsesPath = joinResponsesPath(id)
-      fs.readFile(responsesPath, 'utf8', function (error, ndjson) {
+    elements: function (done) {
+      var elementsPath = joinElementsPath(id)
+      fs.readFile(elementsPath, 'utf8', function (error, ndjson) {
         if (error) {
           if (error.code === 'ENOENT') ndjson = ''
           else return callback(error)
@@ -214,12 +181,16 @@ function readVoteData (id, callback) {
             }
             return {
               date: data[0],
-              responder: data[1],
-              choices: data[2]
+              element: data[1]
             }
           })
           .filter(function (x) {
             return x !== null
+          })
+          .sort(function (a, b) {
+            return a.element
+              .toLowerCase()
+              .localeCompare(b.element.toLowerCase())
           })
         )
       })
@@ -227,19 +198,18 @@ function readVoteData (id, callback) {
   }, function (error, results) {
     if (error) return callback(error)
     callback(null, {
-      title: results.vote.title,
-      choices: results.vote.choices,
-      responses: results.responses
+      title: results.set.title,
+      elements: results.elements
     })
   })
 }
 
-function joinResponsesPath (id) {
-  return path.join(dataPath(id), 'responses.ndjson')
+function joinElementsPath (id) {
+  return path.join(dataPath(id), 'elements.ndjson')
 }
 
-function joinVotePath (id) {
-  return path.join(dataPath(id), 'vote.json')
+function joinSetPath (id) {
+  return path.join(dataPath(id), 'set.json')
 }
 
 function notFound (request, response) {
@@ -263,20 +233,20 @@ server.listen(process.env.PORT || 8080)
 
 var CONCURRENCY_LIMIT = 3
 
-schedule.scheduleJob('0 * * * *', deleteOldVotes)
+schedule.scheduleJob('0 * * * *', deleteOldSets)
 
-deleteOldVotes()
+deleteOldSets()
 
-function deleteOldVotes () {
+function deleteOldSets () {
   fs.readdir(DIRECTORY, function (error, entries) {
     if (error) return console.error(error)
     runParallelLimit(entries.map(function (id) {
       return function (done) {
         var directory = path.join(DIRECTORY, id)
-        var votePath = joinVotePath(id)
-        jsonfile.readFile(votePath, function (error, vote) {
+        var setPath = joinSetPath(id)
+        jsonfile.readFile(setPath, function (error, set) {
           if (error) return console.error(error)
-          if (!old(vote.date)) return
+          if (!old(set.date)) return
           rimraf(directory, function (error) {
             console.log('Deleted ' + id)
             if (error) console.error(error)
@@ -295,46 +265,6 @@ function old (created) {
 
 function dateString () {
   return new Date().toISOString()
-}
-
-function mail (message, callback) {
-  assert(typeof message.subject === 'string')
-  assert(Array.isArray(message.text))
-  assert(message.text.every(function (element) {
-    return typeof element === 'string'
-  }))
-  assert(typeof callback === 'function')
-  if (
-    !process.env.MAILGUN_FROM ||
-    !process.env.EMAIL_TO ||
-    !process.env.MAILGUN_DOMAIN ||
-    !process.env.MAILGUN_KEY
-  ) return callback()
-  var form = new FormData()
-  form.append('from', process.env.MAILGUN_FROM)
-  form.append('to', process.env.EMAIL_TO)
-  form.append('subject', message.subject)
-  form.append('o:dkim', 'yes')
-  form.append('text', message.text.join('\n\n'))
-  var options = {
-    method: 'POST',
-    host: 'api.mailgun.net',
-    path: '/v3/' + process.env.MAILGUN_DOMAIN + '/messages',
-    auth: 'api:' + process.env.MAILGUN_KEY,
-    headers: form.getHeaders()
-  }
-  form.pipe(
-    https.request(options)
-      .once('error', callback)
-      .once('response', function (response) {
-        var status = response.statusCode
-        if (status === 200) return callback()
-        simpleConcat(response, function (error, body) {
-          if (error) return callback(error)
-          callback(body.toString())
-        })
-      })
-  )
 }
 
 function renderMustache (templateFile, view, callback) {

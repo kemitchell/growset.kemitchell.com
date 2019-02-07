@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang=en>
+  {{>head}}
+
+  <body>
+    <main>
+      <h1>{{title}}</h1>
+
+      <form method=post>
+        <ul>
+          {{#elements}}<li>{{element}}</li>{{/elements}}
+          <li>
+            <input name=element type=text autofocus>
+            <button type=submit>Add</button>
+          </li>
+        </ul>
+      </form>
+    </main>
+
+    {{>footer}}
+  </body>
+</html>

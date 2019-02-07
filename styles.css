@@ -37,8 +37,11 @@ tr > th:last-child {
   color: #343a40;
 }
 
-input, select, button {
-  box-sizing: border-box;
+input, button {
   padding: 0.5rem;
+}
+
+li input, li button {
+  box-sizing: border-box;
   width: 100%;
 }
