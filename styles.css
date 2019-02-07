@@ -38,5 +38,7 @@ tr > th:last-child {
 }
 
 input, select, button {
+  box-sizing: border-box;
   padding: 0.5rem;
+  width: 100%;
 }
