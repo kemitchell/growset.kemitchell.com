@@ -8,11 +8,11 @@
 
       <form method=post>
         <ul>
-          {{#elements}}<li>{{element}}</li>{{/elements}}
           <li>
             <input name=element type=text autofocus>
             <button type=submit>Add</button>
           </li>
+          {{#elements}}<li>{{element}}</li>{{/elements}}
         </ul>
       </form>
     </main>
