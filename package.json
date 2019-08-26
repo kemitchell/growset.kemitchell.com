@@ -1,7 +1,7 @@
 {
   "private": true,
   "devDependencies": {
-    "standard": "^13.1.0"
+    "standard": "^14.0.2"
   },
   "dependencies": {
     "basic-auth": "^2.0.1",
