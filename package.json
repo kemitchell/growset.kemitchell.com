@@ -7,7 +7,7 @@
     "basic-auth": "^2.0.1",
     "busboy": "^0.3.1",
     "do-not-cache": "^1.0.1",
-    "form-data": "^2.5.0",
+    "form-data": "^2.5.1",
     "jsonfile": "^5.0.0",
     "mkdirp": "^0.5.1",
     "mustache": "^3.0.2",
