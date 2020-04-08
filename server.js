@@ -5,7 +5,6 @@ var doNotCache = require('do-not-cache')
 var fs = require('fs')
 var http = require('http')
 var jsonfile = require('jsonfile')
-var mkdirp = require('mkdirp')
 var mustache = require('mustache')
 var path = require('path')
 var rimraf = require('rimraf')
@@ -82,7 +81,7 @@ function postIndex (request, response) {
           var setPath = joinSetPath(id)
           runSeries([
             function (done) {
-              mkdirp(dataPath(id), done)
+              fs.mkdir(dataPath(id), { recursive: true }, done)
             },
             function (done) {
               fs.writeFile(setPath, JSON.stringify(data), 'utf8', done)
