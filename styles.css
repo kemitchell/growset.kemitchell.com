@@ -1,9 +1,11 @@
 body > header,
 body > main,
 body > footer {
-  font-family: "Noto Sans", sans-serif;
+  font-family: sans-serif;
   font-size: 12pt;
   line-height: 1.5625;
+  margin: 0 auto;
+  max-width: 30rem;
   padding: 1rem;
 }
 
@@ -38,10 +40,13 @@ tr > th:last-child {
 }
 
 input, button {
+  box-sizing: border-box;
+  margin: 0.5rem 0;
   padding: 0.5rem;
+  width: 100%;
 }
 
-li input, li button {
-  box-sizing: border-box;
-  width: 100%;
+ul {
+  margin: 0;
+  padding: 0;
 }
