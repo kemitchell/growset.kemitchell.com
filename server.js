@@ -15,7 +15,7 @@ var schedule = require('node-schedule')
 
 var DIRECTORY = process.env.DIRECTORY || 'growset'
 var PASSWORD = process.env.PASSWORD || 'growset'
-var USER = process.env.USER || 'growset'
+var USERNAME = process.env.USERNAME || 'growset'
 
 process
   .on('SIGTERM', shutdown)
@@ -43,7 +43,7 @@ function index (request, response) {
   doNotCache(response)
   var method = request.method
   var auth = basicAuth(request)
-  if (!auth || auth.name !== USER || auth.pass !== PASSWORD) {
+  if (!auth || auth.name !== USERNAME || auth.pass !== PASSWORD) {
     response.statusCode = 401
     response.setHeader('WWW-Authenticate', 'Basic realm="Grow Set"')
     return response.end()
