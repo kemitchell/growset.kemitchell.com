@@ -7,14 +7,12 @@
       <h1>{{title}}</h1>
 
       <form method=post>
-        <ul>
-          <li>
-            <input name=element type=text autofocus>
-            <button type=submit>Add</button>
-          </li>
-          {{#elements}}<li>{{element}}</li>{{/elements}}
-        </ul>
+        <input name=element type=text autofocus>
+        <button type=submit>Add</button>
       </form>
+      <ul>
+        {{#elements}}<li>{{element}}</li>{{/elements}}
+      </ul>
     </main>
 
     {{>footer}}
