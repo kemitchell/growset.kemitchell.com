@@ -61,7 +61,11 @@ function getIndex (request, response) {
     }
     runParallelLimit(entries.map(function (entry) {
       return function (done) {
-        readSet(entry, done)
+        readSet(entry, function (error, data) {
+          if (error) return done(error)
+          data.address = '/' + entry
+          done(null, data)
+        })
       }
     }), CONCURRENCY_LIMIT, function (error, sets) {
       if (error) return console.error(error)
