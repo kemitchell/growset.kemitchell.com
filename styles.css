@@ -6,7 +6,7 @@ body > footer {
   line-height: 1.5625;
   margin: 0 auto;
   max-width: 30rem;
-  padding: 1rem;
+  padding: 0 1rem;
 }
 
 td, th {
