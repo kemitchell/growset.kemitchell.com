@@ -8,10 +8,11 @@
     </header>
     <main>
       <form method=post>
-        <h2>Title</h2>
+        <h2>New Set</h2>
         <p><input name=title type=text placeholder=Title autofocus></p>
         <p><button id=submit type=submit>Create</button></p>
       </form>
+      <h2>Existing Sets</h2>
       <ul>
         {{#sets}}
         <li><a href="{{{address}}}">{{title}}</a> {{date}}</li>
