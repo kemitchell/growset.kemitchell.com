@@ -54,10 +54,26 @@ function index (request, response) {
 }
 
 function getIndex (request, response) {
-  renderMustache('index.html', {}, function (error, html) {
-    if (error) return internalError(request, response, error)
-    response.setHeader('Content-Type', 'text/html')
-    response.end(html)
+  fs.readdir(DIRECTORY, function (error, entries) {
+    if (error) {
+      if (error.code === 'ENOENT') entries = []
+      else return console.error(error)
+    }
+    runParallelLimit(entries.map(function (entry) {
+      return function (done) {
+        readSetData(entry, function (error, data) {
+          if (error) return done(error)
+          done(null, { title: data.title, address: entry })
+        })
+      }
+    }), CONCURRENCY_LIMIT, function (error, sets) {
+      if (error) return console.error(error)
+      renderMustache('index.html', { sets }, function (error, html) {
+        if (error) return internalError(request, response, error)
+        response.setHeader('Content-Type', 'text/html')
+        response.end(html)
+      })
+    })
   })
 }
 
