@@ -61,13 +61,13 @@ function getIndex (request, response) {
     }
     runParallelLimit(entries.map(function (entry) {
       return function (done) {
-        readSetData(entry, function (error, data) {
-          if (error) return done(error)
-          done(null, { title: data.title, address: entry })
-        })
+        readSet(entry, done)
       }
     }), CONCURRENCY_LIMIT, function (error, sets) {
       if (error) return console.error(error)
+      sets.sort(function (a, b) {
+        return b.date.localeCompare(a.date)
+      })
       renderMustache('index.html', { sets }, function (error, html) {
         if (error) return internalError(request, response, error)
         response.setHeader('Content-Type', 'text/html')
@@ -174,10 +174,14 @@ function postSet (request, response, id) {
     }))
 }
 
+function readSet (id, callback) {
+  jsonfile.readFile(joinSetPath(id), callback)
+}
+
 function readSetData (id, callback) {
   runParallel({
     set: function (done) {
-      jsonfile.readFile(joinSetPath(id), done)
+      readSet(id, done)
     },
     elements: function (done) {
       var elementsPath = joinElementsPath(id)
@@ -214,6 +218,7 @@ function readSetData (id, callback) {
     if (error) return callback(error)
     callback(null, {
       title: results.set.title,
+      date: results.set.date,
       elements: results.elements
     })
   })
