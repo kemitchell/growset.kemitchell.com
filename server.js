@@ -281,10 +281,10 @@ function deleteOldSets () {
   })
 }
 
-var THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000
+var ONE_YEAR = 365 * 24 * 60 * 60 * 1000
 
 function old (created) {
-  return (new Date() - new Date(created)) > THIRTY_DAYS
+  return (new Date() - new Date(created)) > ONE_YEAR
 }
 
 function dateString () {
