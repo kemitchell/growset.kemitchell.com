@@ -15,7 +15,7 @@
     "run-parallel": "^1.1.10",
     "run-parallel-limit": "^1.0.6",
     "run-series": "^1.1.9",
-    "simple-concat": "^1.0.0"
+    "simple-concat": "^1.0.1"
   },
   "scripts": {
     "lint": "standard"
