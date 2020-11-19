@@ -1,21 +1,21 @@
-var Busboy = require('busboy')
-var basicAuth = require('basic-auth')
-var crypto = require('crypto')
-var doNotCache = require('do-not-cache')
-var fs = require('fs')
-var http = require('http')
-var jsonfile = require('jsonfile')
-var mustache = require('mustache')
-var path = require('path')
-var rimraf = require('rimraf')
-var runParallel = require('run-parallel')
-var runParallelLimit = require('run-parallel-limit')
-var runSeries = require('run-series')
-var schedule = require('node-schedule')
+const Busboy = require('busboy')
+const basicAuth = require('basic-auth')
+const crypto = require('crypto')
+const doNotCache = require('do-not-cache')
+const fs = require('fs')
+const http = require('http')
+const jsonfile = require('jsonfile')
+const mustache = require('mustache')
+const path = require('path')
+const rimraf = require('rimraf')
+const runParallel = require('run-parallel')
+const runParallelLimit = require('run-parallel-limit')
+const runSeries = require('run-series')
+const schedule = require('node-schedule')
 
-var DIRECTORY = process.env.DIRECTORY || 'growset'
-var PASSWORD = process.env.PASSWORD || 'growset'
-var USERNAME = process.env.USERNAME || 'growset'
+const DIRECTORY = process.env.DIRECTORY || 'growset'
+const PASSWORD = process.env.PASSWORD || 'growset'
+const USERNAME = process.env.USERNAME || 'growset'
 
 process
   .on('SIGTERM', shutdown)
@@ -26,23 +26,23 @@ process
     shutdown()
   })
 
-var ID_BYTES = 16
+const ID_BYTES = 16
 
-var ID_RE = new RegExp('^/([a-f0-9]{' + (ID_BYTES * 2) + '})$')
+const ID_RE = new RegExp('^/([a-f0-9]{' + (ID_BYTES * 2) + '})$')
 
-var server = http.createServer(function (request, response) {
-  var url = request.url
+const server = http.createServer(function (request, response) {
+  const url = request.url
   if (url === '/') return index(request, response)
   if (url === '/styles.css') return serveFile(request, response)
-  var match = ID_RE.exec(url)
+  const match = ID_RE.exec(url)
   if (match) add(request, response, match[1])
   else notFound(request, response)
 })
 
 function index (request, response) {
   doNotCache(response)
-  var method = request.method
-  var auth = basicAuth(request)
+  const method = request.method
+  const auth = basicAuth(request)
   if (!auth || auth.name !== USERNAME || auth.pass !== PASSWORD) {
     response.statusCode = 401
     response.setHeader('WWW-Authenticate', 'Basic realm="Grow Set"')
@@ -82,7 +82,7 @@ function getIndex (request, response) {
 }
 
 function postIndex (request, response) {
-  var title
+  let title
   request.pipe(
     new Busboy({ headers: request.headers })
       .on('field', function (name, value) {
@@ -96,9 +96,9 @@ function postIndex (request, response) {
             response.statusCode = 400
             return response.end()
           }
-          var date = dateString()
-          var data = { date, title }
-          var setPath = joinSetPath(id)
+          const date = dateString()
+          const data = { date, title }
+          const setPath = joinSetPath(id)
           runSeries([
             function (done) {
               fs.mkdir(dataPath(id), { recursive: true }, done)
@@ -125,8 +125,8 @@ function createID (callback) {
 }
 
 function serveFile (request, response) {
-  var basename = path.basename(request.url)
-  var filePath = packagePath(basename)
+  const basename = path.basename(request.url)
+  const filePath = packagePath(basename)
   fs.createReadStream(filePath).pipe(response)
 }
 
@@ -136,7 +136,7 @@ function methodNotAllowed (request, response) {
 }
 
 function add (request, response, id) {
-  var method = request.method
+  const method = request.method
   if (method === 'GET') getSet(request, response, id)
   else if (method === 'POST') postSet(request, response, id)
   else methodNotAllowed(request, response)
@@ -159,16 +159,16 @@ function getSet (request, response, id) {
 
 function postSet (request, response, id) {
   doNotCache(response)
-  var element
+  let element
   request.pipe(new Busboy({ headers: request.headers })
     .on('field', function (name, value) {
       if (!value) return
       if (name === 'element') element = value
     })
     .once('finish', function () {
-      var date = dateString()
-      var line = JSON.stringify([date, element])
-      var responsesPath = joinElementsPath(id)
+      const date = dateString()
+      const line = JSON.stringify([date, element])
+      const responsesPath = joinElementsPath(id)
       fs.appendFile(responsesPath, line + '\n', function (error) {
         if (error) return internalError(request, response, error)
         response.statusCode = 303
@@ -188,7 +188,7 @@ function readSetData (id, callback) {
       readSet(id, done)
     },
     elements: function (done) {
-      var elementsPath = joinElementsPath(id)
+      const elementsPath = joinElementsPath(id)
       fs.readFile(elementsPath, 'utf8', function (error, ndjson) {
         if (error) {
           if (error.code === 'ENOENT') ndjson = ''
@@ -197,8 +197,9 @@ function readSetData (id, callback) {
         done(null, ndjson
           .split('\n')
           .map(function (line) {
+            let data
             try {
-              var data = JSON.parse(line)
+              data = JSON.parse(line)
             } catch (error) {
               return null
             }
@@ -255,7 +256,7 @@ function shutdown () {
 
 server.listen(process.env.PORT || 8080)
 
-var CONCURRENCY_LIMIT = 3
+const CONCURRENCY_LIMIT = 3
 
 schedule.scheduleJob('0 * * * *', deleteOldSets)
 
@@ -266,8 +267,8 @@ function deleteOldSets () {
     if (error) return console.error(error)
     runParallelLimit(entries.map(function (id) {
       return function (done) {
-        var directory = path.join(DIRECTORY, id)
-        var setPath = joinSetPath(id)
+        const directory = path.join(DIRECTORY, id)
+        const setPath = joinSetPath(id)
         jsonfile.readFile(setPath, function (error, set) {
           if (error) return console.error(error)
           if (!old(set.date)) return
@@ -281,7 +282,7 @@ function deleteOldSets () {
   })
 }
 
-var ONE_YEAR = 365 * 24 * 60 * 60 * 1000
+const ONE_YEAR = 365 * 24 * 60 * 60 * 1000
 
 function old (created) {
   return (new Date() - new Date(created)) > ONE_YEAR
@@ -298,7 +299,7 @@ function renderMustache (templateFile, view, callback) {
     footer: loadPartial('footer')
   }, function (error, templates) {
     if (error) return callback(error)
-    var html = mustache.render(templates.rendered, view, templates)
+    const html = mustache.render(templates.rendered, view, templates)
     callback(null, html)
   })
 
