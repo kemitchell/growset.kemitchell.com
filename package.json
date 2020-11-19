@@ -19,5 +19,6 @@
   },
   "scripts": {
     "lint": "standard"
-  }
+  },
+  "name": "growset.kemitchell.com"
 }
