@@ -15,7 +15,13 @@
       <h2>Existing Sets</h2>
       <ul>
         {{#sets}}
-        <li><a href="{{{address}}}">{{title}}</a> {{date}}</li>
+        <li>
+          <a href="{{{address}}}">{{title}}</a> {{date}}
+          <form action=/remove method=post>
+            <input type=hidden name=id value="{{{id}}}">
+            <input type=submit value=Remove>
+          </form>
+        </li>
         {{/sets}}
       </ul>
     </main>

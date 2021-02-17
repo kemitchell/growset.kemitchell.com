@@ -38,6 +38,7 @@ const server = http.createServer((request, response) => {
   const url = request.url
   if (url === '/') return index(request, response)
   if (url === '/styles.css') return serveStyles(request, response)
+  if (url === '/remove') return remove(request, response)
   const match = ID_RE.exec(url)
   if (match) set(request, response, match[1])
   else notFound(request, response)
@@ -63,14 +64,13 @@ function getIndex (request, response) {
       if (error.code === 'ENOENT') entries = []
       else return request.log.error(error)
     }
-    runParallelLimit(entries.map(entry => {
-      return done => {
-        readSet(entry, (error, data) => {
-          if (error) return done(error)
-          data.address = '/' + entry
-          done(null, data)
-        })
-      }
+    runParallelLimit(entries.map(entry => done => {
+      readSet(entry, (error, data) => {
+        if (error) return done(error)
+        data.address = '/' + entry
+        data.id = entry
+        done(null, data)
+      })
     }), CONCURRENCY_LIMIT, (error, sets) => {
       if (error) return request.log.error(error)
       sets.sort((a, b) => b.date.localeCompare(a.date))
@@ -124,6 +124,36 @@ function createID (callback) {
     if (error) return callback(error)
     callback(null, buffer.toString('hex'))
   })
+}
+
+function remove (request, response) {
+  doNotCache(response)
+  if (request.method !== 'POST') {
+    return methodNotAllowed(request, response)
+  }
+  const auth = basicAuth(request)
+  if (!auth || auth.name !== USERNAME || auth.pass !== PASSWORD) {
+    response.statusCode = 401
+    response.setHeader('WWW-Authenticate', 'Basic realm="Grow Set"')
+    return response.end()
+  }
+  let id
+  request.pipe(
+    new Busboy({ headers: request.headers })
+      .on('field', (name, value) => {
+        if (!value) return
+        if (name === 'id') id = value
+      })
+      .once('finish', () => {
+        const directory = path.join(DIRECTORY, id)
+        rimraf(directory, error => {
+          if (error) return internalError(request, response, error)
+          response.statusCode = 303
+          response.setHeader('Location', '/')
+          response.end()
+        })
+      })
+  )
 }
 
 function serveStyles (request, response) {
