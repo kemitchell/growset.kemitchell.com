@@ -17,12 +17,15 @@ const DIRECTORY = process.env.DIRECTORY || 'growset'
 const PASSWORD = process.env.PASSWORD || 'growset'
 const USERNAME = process.env.USERNAME || 'growset'
 
+const logger = require('pino')()
+const addLogs = require('pino-http')({ logger })
+
 process
   .on('SIGTERM', shutdown)
   .on('SIGQUIT', shutdown)
   .on('SIGINT', shutdown)
   .on('uncaughtException', function (error) {
-    console.error(error)
+    logger.error(error)
     shutdown()
   })
 
@@ -31,6 +34,7 @@ const ID_BYTES = 16
 const ID_RE = new RegExp('^/([a-f0-9]{' + (ID_BYTES * 2) + '})$')
 
 const server = http.createServer(function (request, response) {
+  addLogs(request, response)
   const url = request.url
   if (url === '/') return index(request, response)
   if (url === '/styles.css') return serveFile(request, response)
@@ -57,7 +61,7 @@ function getIndex (request, response) {
   fs.readdir(DIRECTORY, function (error, entries) {
     if (error) {
       if (error.code === 'ENOENT') entries = []
-      else return console.error(error)
+      else return request.log.error(error)
     }
     runParallelLimit(entries.map(function (entry) {
       return function (done) {
@@ -68,7 +72,7 @@ function getIndex (request, response) {
         })
       }
     }), CONCURRENCY_LIMIT, function (error, sets) {
-      if (error) return console.error(error)
+      if (error) return request.log.error(error)
       sets.sort(function (a, b) {
         return b.date.localeCompare(a.date)
       })
@@ -243,7 +247,7 @@ function notFound (request, response) {
 }
 
 function internalError (request, response, error) {
-  console.error(error)
+  request.log.error(error)
   response.statusCode = 500
   response.end()
 }
@@ -264,17 +268,17 @@ deleteOldSets()
 
 function deleteOldSets () {
   fs.readdir(DIRECTORY, function (error, entries) {
-    if (error) return console.error(error)
+    if (error) return logger.error(error)
     runParallelLimit(entries.map(function (id) {
       return function (done) {
         const directory = path.join(DIRECTORY, id)
         const setPath = joinSetPath(id)
         jsonfile.readFile(setPath, function (error, set) {
-          if (error) return console.error(error)
+          if (error) return logger.error(error)
           if (!old(set.date)) return
           rimraf(directory, function (error) {
-            console.log('Deleted ' + id)
-            if (error) console.error(error)
+            logger.info('Deleted ' + id)
+            if (error) logger.error(error)
           })
         })
       }
