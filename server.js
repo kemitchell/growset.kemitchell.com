@@ -39,7 +39,7 @@ const server = http.createServer((request, response) => {
   if (url === '/') return index(request, response)
   if (url === '/styles.css') return serveStyles(request, response)
   const match = ID_RE.exec(url)
-  if (match) add(request, response, match[1])
+  if (match) set(request, response, match[1])
   else notFound(request, response)
 })
 
@@ -136,7 +136,7 @@ function methodNotAllowed (request, response) {
   response.end()
 }
 
-function add (request, response, id) {
+function set (request, response, id) {
   const method = request.method
   if (method === 'GET') getSet(request, response, id)
   else if (method === 'POST') postSet(request, response, id)
