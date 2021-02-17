@@ -37,7 +37,7 @@ const server = http.createServer(function (request, response) {
   addLogs(request, response)
   const url = request.url
   if (url === '/') return index(request, response)
-  if (url === '/styles.css') return serveFile(request, response)
+  if (url === '/styles.css') return serveStyles(request, response)
   const match = ID_RE.exec(url)
   if (match) add(request, response, match[1])
   else notFound(request, response)
@@ -128,10 +128,9 @@ function createID (callback) {
   })
 }
 
-function serveFile (request, response) {
-  const basename = path.basename(request.url)
-  const filePath = packagePath(basename)
-  fs.createReadStream(filePath).pipe(response)
+function serveStyles (request, response) {
+  response.setHeader('Content-Type', 'text/css')
+  fs.createReadStream('styles.css').pipe(response)
 }
 
 function methodNotAllowed (request, response) {
