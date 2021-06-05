@@ -1,1 +1,1 @@
-ssh growset.kemitchell.com "source ~/.profile ; ./update-growset"
+ssh growset.kemitchell.com "./update/growset"
