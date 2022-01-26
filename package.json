@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "basic-auth": "^2.0.1",
-    "busboy": "^0.3.1",
+    "busboy": "^1.4.0",
     "do-not-cache": "^1.0.1",
     "form-data": "^3.0.0",
     "jsonfile": "^6.1.0",

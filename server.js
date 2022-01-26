@@ -86,12 +86,12 @@ function getIndex (request, response) {
 function postIndex (request, response) {
   let title
   request.pipe(
-    new Busboy({ headers: request.headers })
+    Busboy({ headers: request.headers })
       .on('field', (name, value) => {
         if (!value) return
         if (name === 'title') title = value
       })
-      .once('finish', () => {
+      .once('close', () => {
         createID((error, id) => {
           if (error) return internalError(request, response, error)
           if (!title) {
@@ -139,12 +139,12 @@ function remove (request, response) {
   }
   let id
   request.pipe(
-    new Busboy({ headers: request.headers })
+    Busboy({ headers: request.headers })
       .on('field', (name, value) => {
         if (!value) return
         if (name === 'id') id = value
       })
-      .once('finish', () => {
+      .once('close', () => {
         const directory = path.join(DIRECTORY, id)
         rimraf(directory, error => {
           if (error) return internalError(request, response, error)
