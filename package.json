@@ -15,7 +15,7 @@
     "pino-http": "^5.5.0",
     "rimraf": "^3.0.2",
     "run-parallel": "^1.2.0",
-    "run-parallel-limit": "^1.0.6",
+    "run-parallel-limit": "^1.1.0",
     "run-series": "^1.1.9",
     "simple-concat": "^1.0.1"
   },
