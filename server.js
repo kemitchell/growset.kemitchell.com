@@ -1,4 +1,4 @@
-const Busboy = require('busboy')
+const busboy = require('busboy')
 const basicAuth = require('basic-auth')
 const crypto = require('crypto')
 const doNotCache = require('do-not-cache')
@@ -86,7 +86,7 @@ function getIndex (request, response) {
 function postIndex (request, response) {
   let title
   request.pipe(
-    new Busboy({ headers: request.headers })
+    busboy({ headers: request.headers })
       .on('field', (name, value) => {
         if (!value) return
         if (name === 'title') title = value
@@ -139,7 +139,7 @@ function remove (request, response) {
   }
   let id
   request.pipe(
-    new Busboy({ headers: request.headers })
+    busboy({ headers: request.headers })
       .on('field', (name, value) => {
         if (!value) return
         if (name === 'id') id = value
@@ -191,7 +191,7 @@ function getSet (request, response, id) {
 function postSet (request, response, id) {
   doNotCache(response)
   let element
-  request.pipe(new Busboy({ headers: request.headers })
+  request.pipe(busboy({ headers: request.headers })
     .on('field', (name, value) => {
       if (!value) return
       if (name === 'element') element = value
