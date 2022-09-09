@@ -86,7 +86,7 @@ function getIndex (request, response) {
 function postIndex (request, response) {
   let title
   request.pipe(
-    Busboy({ headers: request.headers })
+    new Busboy({ headers: request.headers })
       .on('field', (name, value) => {
         if (!value) return
         if (name === 'title') title = value
@@ -139,7 +139,7 @@ function remove (request, response) {
   }
   let id
   request.pipe(
-    Busboy({ headers: request.headers })
+    new Busboy({ headers: request.headers })
       .on('field', (name, value) => {
         if (!value) return
         if (name === 'id') id = value
