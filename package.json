@@ -12,7 +12,7 @@
     "mustache": "^4.2.0",
     "node-schedule": "^2.1.1",
     "pino": "^8.8.0",
-    "pino-http": "^8.2.0",
+    "pino-http": "^8.3.1",
     "rimraf": "^3.0.2",
     "run-parallel": "^1.2.0",
     "run-parallel-limit": "^1.1.0",
