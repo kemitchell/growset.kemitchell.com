@@ -1,24 +1,26 @@
-const busboy = require('busboy')
-const basicAuth = require('basic-auth')
-const crypto = require('crypto')
-const doNotCache = require('do-not-cache')
-const fs = require('fs')
-const http = require('http')
-const jsonfile = require('jsonfile')
-const mustache = require('mustache')
-const path = require('path')
-const rimraf = require('rimraf')
-const runParallel = require('run-parallel')
-const runParallelLimit = require('run-parallel-limit')
-const runSeries = require('run-series')
-const schedule = require('node-schedule')
+import busboy from 'busboy'
+import pino from 'pino'
+import pinoHTTP from 'pino-http'
+import basicAuth from 'basic-auth'
+import crypto from 'crypto'
+import doNotCache from 'do-not-cache'
+import fs from 'fs'
+import http from 'http'
+import jsonfile from 'jsonfile'
+import mustache from 'mustache'
+import path from 'path'
+import rimraf from 'rimraf'
+import runParallel from 'run-parallel'
+import runParallelLimit from 'run-parallel-limit'
+import runSeries from 'run-series'
+import schedule from 'node-schedule'
 
 const DIRECTORY = process.env.DIRECTORY || 'growset'
 const PASSWORD = process.env.PASSWORD || 'growset'
 const USERNAME = process.env.USERNAME || 'growset'
 
-const logger = require('pino')()
-const addLogs = require('pino-http')({ logger })
+const logger = pino()
+const addLogs = pinoHTTP({ logger })
 
 process
   .on('SIGTERM', shutdown)

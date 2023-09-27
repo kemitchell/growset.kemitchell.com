@@ -1,1 +1,2 @@
-ssh growset.kemitchell.com "./update/growset"
+#!/bin/sh
+exec ssh growset.kemitchell.com "./update/growset"
