@@ -1,7 +1,5 @@
-import busboy from 'busboy'
-import pino from 'pino'
-import pinoHTTP from 'pino-http'
 import basicAuth from 'basic-auth'
+import busboy from 'busboy'
 import crypto from 'crypto'
 import doNotCache from 'do-not-cache'
 import fs from 'fs'
@@ -9,15 +7,20 @@ import http from 'http'
 import jsonfile from 'jsonfile'
 import mustache from 'mustache'
 import path from 'path'
+import pino from 'pino'
+import pinoHTTP from 'pino-http'
 import rimraf from 'rimraf'
 import runParallel from 'run-parallel'
 import runParallelLimit from 'run-parallel-limit'
 import runSeries from 'run-series'
 import schedule from 'node-schedule'
+import { fileURLToPath } from 'url'
 
 const DIRECTORY = process.env.DIRECTORY || 'growset'
 const PASSWORD = process.env.PASSWORD || 'growset'
 const USERNAME = process.env.USERNAME || 'growset'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const logger = pino()
 const addLogs = pinoHTTP({ logger })
