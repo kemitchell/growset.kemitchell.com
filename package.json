@@ -2,7 +2,7 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "standard": "^17.0.0"
+    "standard": "^17.1.0"
   },
   "dependencies": {
     "basic-auth": "^2.0.1",
