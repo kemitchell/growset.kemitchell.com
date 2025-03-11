@@ -14,7 +14,7 @@
     "node-schedule": "^2.1.1",
     "pino": "^9.6.0",
     "pino-http": "^10.4.0",
-    "rimraf": "^5.0.5",
+    "rimraf": "^6.0.1",
     "run-parallel": "^1.2.0",
     "run-parallel-limit": "^1.1.0",
     "run-series": "^1.1.9",
