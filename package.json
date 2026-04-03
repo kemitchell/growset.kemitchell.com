@@ -2,6 +2,7 @@
   "type": "module",
   "private": true,
   "devDependencies": {
+    "licensee": "^12.0.1",
     "standard": "^17.1.2"
   },
   "dependencies": {
@@ -21,6 +22,7 @@
     "simple-concat": "^1.0.1"
   },
   "scripts": {
+    "licenses": "licensee --errors-only",
     "lint": "standard"
   },
   "name": "growset.kemitchell.com"
