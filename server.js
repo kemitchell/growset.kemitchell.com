@@ -9,7 +9,6 @@ import mustache from 'mustache'
 import path from 'path'
 import pino from 'pino'
 import pinoHTTP from 'pino-http'
-import { rimraf } from 'rimraf'
 import runParallel from 'run-parallel'
 import runParallelLimit from 'run-parallel-limit'
 import runSeries from 'run-series'
@@ -151,7 +150,7 @@ function remove (request, response) {
       })
       .once('close', () => {
         const directory = path.join(DIRECTORY, id)
-        rimraf(directory, error => {
+        fs.rm(directory, { recursive: true }, error => {
           if (error) return internalError(request, response, error)
           response.statusCode = 303
           response.setHeader('Location', '/')
