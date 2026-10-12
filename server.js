@@ -51,7 +51,7 @@ const server = http.createServer((request, response) => {
 function index (request, response) {
   doNotCache(response)
   const method = request.method
-  const auth = basicAuth(request.headers.authorization)
+  const auth = basicAuth(request.headers.authorization || '')
   if (!auth || auth.name !== USERNAME || auth.pass !== PASSWORD) {
     response.statusCode = 401
     response.setHeader('WWW-Authenticate', 'Basic realm="Grow Set"')
@@ -135,7 +135,7 @@ function remove (request, response) {
   if (request.method !== 'POST') {
     return methodNotAllowed(request, response)
   }
-  const auth = basicAuth(request.headers.authorization)
+  const auth = basicAuth(request.headers.authorization || '')
   if (!auth || auth.name !== USERNAME || auth.pass !== PASSWORD) {
     response.statusCode = 401
     response.setHeader('WWW-Authenticate', 'Basic realm="Grow Set"')
