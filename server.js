@@ -2,7 +2,7 @@ import { parse as basicAuth } from 'basic-auth'
 import busboy from 'busboy'
 import nanoid from 'nanoid'
 import doNotCache from 'do-not-cache'
-import fs from 'fs'
+import { readdir, mkdir, readFile, writeFile, rm, appendFile, createReadStream } from 'fs'
 import http from 'http'
 import jsonfile from 'jsonfile'
 import mustache from 'mustache'
@@ -63,7 +63,7 @@ function index (request, response) {
 }
 
 function getIndex (request, response) {
-  fs.readdir(DIRECTORY, (error, entries) => {
+  readdir(DIRECTORY, (error, entries) => {
     if (error) {
       if (error.code === 'ENOENT') entries = []
       else return request.log.error(error)
@@ -106,10 +106,10 @@ function postIndex (request, response) {
         const setPath = joinSetPath(id)
         runSeries([
           done => {
-            fs.mkdir(dataPath(id), { recursive: true }, done)
+            mkdir(dataPath(id), { recursive: true }, done)
           },
           done => {
-            fs.writeFile(setPath, JSON.stringify(data), 'utf8', done)
+            writeFile(setPath, JSON.stringify(data), 'utf8', done)
           }
         ], error => {
           if (error) return internalError(request, response, error)
@@ -141,7 +141,7 @@ function remove (request, response) {
       })
       .once('close', () => {
         const directory = path.join(DIRECTORY, id)
-        fs.rm(directory, { recursive: true }, error => {
+        rm(directory, { recursive: true }, error => {
           if (error) return internalError(request, response, error)
           response.statusCode = 303
           response.setHeader('Location', '/')
@@ -153,7 +153,7 @@ function remove (request, response) {
 
 function serveStyles (request, response) {
   response.setHeader('Content-Type', 'text/css')
-  fs.createReadStream('styles.css').pipe(response)
+  createReadStream('styles.css').pipe(response)
 }
 
 function methodNotAllowed (request, response) {
@@ -195,7 +195,7 @@ function postSet (request, response, id) {
       const date = dateString()
       const line = JSON.stringify([date, element])
       const responsesPath = joinElementsPath(id)
-      fs.appendFile(responsesPath, line + '\n', error => {
+      appendFile(responsesPath, line + '\n', error => {
         if (error) return internalError(request, response, error)
         response.statusCode = 303
         response.setHeader('Location', '/' + id)
@@ -215,7 +215,7 @@ function readSetData (id, callback) {
     },
     elements: done => {
       const elementsPath = joinElementsPath(id)
-      fs.readFile(elementsPath, 'utf8', (error, ndjson) => {
+      readFile(elementsPath, 'utf8', (error, ndjson) => {
         if (error) {
           if (error.code === 'ENOENT') ndjson = ''
           else return callback(error)
@@ -285,7 +285,7 @@ schedule.scheduleJob('0 * * * *', deleteOldSets)
 deleteOldSets()
 
 function deleteOldSets () {
-  fs.readdir(DIRECTORY, (error, entries) => {
+  readdir(DIRECTORY, (error, entries) => {
     if (error) return logger.error(error)
     runParallelLimit(entries.map(id => {
       return done => {
@@ -294,7 +294,7 @@ function deleteOldSets () {
         jsonfile.readFile(setPath, (error, set) => {
           if (error) return logger.error(error)
           if (!old(set.date)) return
-          fs.rm(directory, { force: true, recursive: true }, error => {
+          rm(directory, { force: true, recursive: true }, error => {
             logger.info('Deleted ' + id)
             if (error) logger.error(error)
           })
@@ -330,7 +330,7 @@ function renderMustache (templateFile, view, callback) {
   }
 
   function loadFile (name) {
-    return done => { fs.readFile(packagePath(name), 'utf8', done) }
+    return done => { readFile(packagePath(name), 'utf8', done) }
   }
 }
 
