@@ -1,6 +1,6 @@
 import { parse as basicAuth } from 'basic-auth'
 import busboy from 'busboy'
-import crypto from 'crypto'
+import nanoid from 'nanoid'
 import doNotCache from 'do-not-cache'
 import fs from 'fs'
 import http from 'http'
@@ -96,38 +96,29 @@ function postIndex (request, response) {
         if (name === 'title') title = value
       })
       .once('close', () => {
-        createID((error, id) => {
-          if (error) return internalError(request, response, error)
-          if (!title) {
-            response.statusCode = 400
-            return response.end()
+        const id = nanoid()
+        if (!title) {
+          response.statusCode = 400
+          return response.end()
+        }
+        const date = dateString()
+        const data = { date, title }
+        const setPath = joinSetPath(id)
+        runSeries([
+          done => {
+            fs.mkdir(dataPath(id), { recursive: true }, done)
+          },
+          done => {
+            fs.writeFile(setPath, JSON.stringify(data), 'utf8', done)
           }
-          const date = dateString()
-          const data = { date, title }
-          const setPath = joinSetPath(id)
-          runSeries([
-            done => {
-              fs.mkdir(dataPath(id), { recursive: true }, done)
-            },
-            done => {
-              fs.writeFile(setPath, JSON.stringify(data), 'utf8', done)
-            }
-          ], error => {
-            if (error) return internalError(request, response, error)
-            response.setHeader('Location', '/' + id)
-            response.statusCode = 303
-            response.end()
-          })
+        ], error => {
+          if (error) return internalError(request, response, error)
+          response.setHeader('Location', '/' + id)
+          response.statusCode = 303
+          response.end()
         })
       })
   )
-}
-
-function createID (callback) {
-  crypto.randomBytes(ID_BYTES, (error, buffer) => {
-    if (error) return callback(error)
-    callback(null, buffer.toString('hex'))
-  })
 }
 
 function remove (request, response) {
@@ -303,7 +294,7 @@ function deleteOldSets () {
         jsonfile.readFile(setPath, (error, set) => {
           if (error) return logger.error(error)
           if (!old(set.date)) return
-          rimraf(directory, error => {
+          fs.rm(directory, { force: true, recursive: true }, error => {
             logger.info('Deleted ' + id)
             if (error) logger.error(error)
           })
