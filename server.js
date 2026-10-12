@@ -1,6 +1,6 @@
 import { parse as basicAuth } from 'basic-auth'
 import busboy from 'busboy'
-import nanoid from 'nanoid'
+import { nanoid } from 'nanoid'
 import doNotCache from 'do-not-cache'
 import { readdir, mkdir, readFile, writeFile, rm, appendFile, createReadStream } from 'node:fs'
 import http from 'node:http'
