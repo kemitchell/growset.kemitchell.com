@@ -237,9 +237,12 @@ function readSetData (id, callback) {
           })
           .filter(x => x !== null)
           .sort((a, b) => {
-            return a.element
-              .toLowerCase()
-              .localeCompare(b.element.toLowerCase())
+            return normalize(a).localeCompare(normalize(b))
+            function normalize (string) {
+              return string
+                .toLowerCase()
+                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")
+            }
           })
         )
       })
