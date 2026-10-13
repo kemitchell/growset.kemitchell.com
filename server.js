@@ -241,7 +241,7 @@ function readSetData (id, callback) {
             function normalize (string) {
               return string
                 .toLowerCase()
-                .replace(/[.,/#!$%^&*;:{}=-_`~()]/g, '')
+                .replace(/["“”'‘’.,/#!$%^&*;:{}=-_`~()]/g, '')
             }
           })
         )
