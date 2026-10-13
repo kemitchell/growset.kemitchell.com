@@ -237,7 +237,7 @@ function readSetData (id, callback) {
           })
           .filter(x => x !== null)
           .sort((a, b) => {
-            return normalize(a).localeCompare(normalize(b))
+            return normalize(a || '').localeCompare(normalize(b || ''))
             function normalize (string) {
               return string
                 .toLowerCase()
