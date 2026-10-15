@@ -36,7 +36,7 @@ process
 
 const ID_BYTES = 16
 
-const ID_RE = new RegExp('^/([a-f0-9]{' + (ID_BYTES * 2) + '})$')
+const ID_RE = new RegExp('^/([A-Za-z0-9_-]+)$')
 
 const server = http.createServer((request, response) => {
   addLogs(request, response)
